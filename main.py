@@ -8,6 +8,7 @@ from keyboards import *
 from states import router as state_router
 from service import *
 from connection import *
+from texts import movie_caption
 from callbacks import router as callback_router
 
 load_dotenv()
@@ -25,43 +26,32 @@ dp = Dispatcher()
 
 
 
-
-@dp.message(F.text == "избранные")
+@dp.message(F.text == "⭐ Избранное")
 @dp.message(Command("favourites"))
 async def show_all_movies(message: Message):
 
     movies = await get_favourite_movies(message.from_user.id)
 
     if not movies:
-        await message.answer("Раздел избранных пока пусто ")
+        await message.answer("⭐ В избранном пока пусто.\n\nОткройте каталог и сохраните фильмы, которые захотите посмотреть!")
         return
 
     for movie in movies:
         buttons = await delete_from_fv_button(movie['movie_id'])
-        caption = f"""
-<b>{movie['title']}</b>
-
-year: {movie['release_year']}
-
-genre: {movie['genre']}
-        """
+        caption =movie_caption(movie)
         await message.answer_photo(photo=movie['poster_file_id'], caption=caption, reply_markup=buttons, parse_mode="HTML")
 
 
-@dp.message(F.text == "cлучайный фильм")
+@dp.message(F.text == "🎲 Случайный фильм")
 @dp.message(Command("random"))
 async def show_random_movie(message: Message):
     movie = await random_movie()
 
     if not movie:
-        await message.answer("Каталог пока пуст!")
+        await message.answer("🎬 Каталог пока пуст.\n\nДобавьте первый фильм, чтобы здесь появились рекомендации!")
         return
 
-    caption = f"""
-🎬 <b>{movie['title']}</b>
-📅 Год: {movie['release_year']}
-🎭 Жанр: {movie['genre']}
-"""
+    caption = movie_caption(movie)
     
 
     await message.answer_photo(photo=movie['poster_file_id'], caption=caption, parse_mode="HTML", reply_markup= await get_random_btn(movie['id']))
@@ -71,33 +61,45 @@ async def show_random_movie(message: Message):
 
 
 
-@dp.message(F.text == "🍽 Каталог")
+@dp.message(F.text == "🍿 Каталог фильмов")
 @dp.message(Command("movies"))
 async def show_one_movie(message: Message):
 
     buttons = await get_movies_all_btn()
 
     if not buttons.inline_keyboard:
-        await message.answer("movies catalog is empty, try to add with add button")
+        await message.answer("🎬 В каталоге пока нет фильмов.\n\nНажмите «➕ Добавить фильм», чтобы добавить первый!")
         return
 
-    await message.answer("select a movie to see about", reply_markup=buttons)
+    await message.answer("🍿 Выберите фильм, чтобы открыть его карточку:", reply_markup=buttons)
 
 
 
-@dp.message(F.text == "stats")
+@dp.message(F.text == "📊 Статистика")
 @dp.message(Command("stats"))
 async def show_favourites_count(message: Message):
 
     total = await get_favourites_count(message.from_user.id)
     if total['count'] < 1:
-        await message.answer("Похоже у вас нет избранных фильмов , исследуйте фильмы в общем каталоге")
+        await message.answer("⭐ У вас пока нет избранных фильмов.\n\nЗагляните в каталог и добавьте туда то, что вам понравилось!")
         return
 
-    await message.answer(f"У вас всего {total['count']} фильмов в избранном")
+    await message.answer(f"⭐ В избранном сохранено фильмов: {total['count']}.")
 
 
 
+
+@dp.message(F.text == "🎭 Жанры")
+@dp.message(Command("genre"))
+async def show_genres(message: Message):
+
+    buttons = await get_genres_btn()
+
+    if not buttons.inline_keyboard:
+        await message.answer("🎭 Жанров пока нет.\n\nНажмите «➕ Добавить фильм», чтобы добавить первый!")
+        return
+
+    await message.answer("🎭 Выберите жанр:", reply_markup=buttons)
 
 
 
@@ -109,9 +111,9 @@ async def start_bot(message: Message):
 
     if not await profile(user.id):
         await create_user(user.username, user.full_name, user.id)
-        await message.answer(f"hello {message.from_user.full_name}", reply_markup=main_kb)
+        await message.answer(f"👋 Добро пожаловать, {message.from_user.full_name}!\n\n🍿 Здесь вы можете просматривать общий каталог, находить случайные фильмы и собирать собственную коллекцию избранного.\n\nВыберите действие в меню:", reply_markup=main_kb)
     else:
-        await message.answer(f"Welcome back, {user.full_name}", reply_markup=main_kb)
+        await message.answer(f"👋 С возвращением, {user.full_name}!\n\nПродолжим знакомиться с фильмами? Выберите действие в меню:", reply_markup=main_kb)
 
 
 
@@ -123,9 +125,9 @@ async def main():
     dp.include_router(callback_router)
     await dp.start_polling(bot)
 
-
+@dp.message()
+async def nothing(message: Message):
+    await message.answer("Не понял. Откройте меню или /help.", reply_markup= main_kb)
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-

@@ -3,18 +3,15 @@ from service import *
 
 
 
-
-
 main_kb = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="🍽 Каталог"), KeyboardButton(text="избранные")],
-        [KeyboardButton(text="cлучайный фильм"), KeyboardButton(text="Добавить фильм")],
-        [KeyboardButton(text="stats"), KeyboardButton(text="Помощь")]
-        
+        [KeyboardButton(text="🍿 Каталог фильмов"), KeyboardButton(text="⭐ Избранное")],
+        [KeyboardButton(text="🎭 Жанры"), KeyboardButton(text="🎲 Случайный фильм")],
+        [KeyboardButton(text="➕ Добавить фильм"), KeyboardButton(text="📊 Статистика")],
+        [KeyboardButton(text="ℹ️ Помощь")]
     ],
     resize_keyboard=True,
 )
-
 
 
 
@@ -24,7 +21,7 @@ async def get_movies_all_btn():
     keyboards = []
 
     for movies in data:
-        keyboards.append([InlineKeyboardButton(text=f"{movies['title']}", callback_data=f"movie_show_{movies['id']}")])
+        keyboards.append([InlineKeyboardButton(text=f"{movies['title']}({movies['release_year']})", callback_data=f"movie_show_{movies['id']}")])
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
     return keyboard
@@ -35,7 +32,7 @@ async def get_movies_all_btn():
 async def get_info_about_movie(movie_id):
 
     keyboards = [
-        [InlineKeyboardButton(text="Подробнее", callback_data=f"movie_about_{movie_id}"), InlineKeyboardButton(text="в избранном", callback_data=f"movie_favourite_{movie_id}")]
+        [InlineKeyboardButton(text="📖 Подробнее", callback_data=f"movie_about_{movie_id}"), InlineKeyboardButton(text="⭐ В избранное", callback_data=f"movie_favourite_{movie_id}")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
 
@@ -46,7 +43,7 @@ async def get_info_about_movie(movie_id):
 
 async def get_back_button(movie_id):
     keyboards = [
-        [InlineKeyboardButton(text="back", callback_data=f"movie_back_{movie_id}")]
+        [InlineKeyboardButton(text="⬅️ Назад", callback_data=f"movie_back_{movie_id}")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
 
@@ -57,7 +54,7 @@ async def get_back_button(movie_id):
 
 async def delete_from_fv_button(movie_id):
     keyboards = [
-        [InlineKeyboardButton(text="удалить из избранного", callback_data=f"movie_delete_{movie_id}"), InlineKeyboardButton(text="Подробнее", callback_data=f"fv_movie_about_{movie_id}")]
+        [InlineKeyboardButton(text="🗑 Удалить из избранного", callback_data=f"movie_delete_{movie_id}"), InlineKeyboardButton(text="📖 Подробнее", callback_data=f"fv_movie_about_{movie_id}")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
 
@@ -68,7 +65,7 @@ async def delete_from_fv_button(movie_id):
 
 async def get_fv_back_button(movie_id):
     keyboards = [
-        [InlineKeyboardButton(text="back", callback_data=f"fv_movie_back_{movie_id}")]
+        [InlineKeyboardButton(text="⬅️ Назад", callback_data=f"fv_movie_back_{movie_id}")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
 
@@ -78,7 +75,7 @@ async def get_fv_back_button(movie_id):
 
 async def get_random_back_button(movie_id):
     keyboards = [
-        [InlineKeyboardButton(text="back", callback_data=f"random_movie_back_{movie_id}")]
+        [InlineKeyboardButton(text="⬅️ Назад", callback_data=f"random_movie_back_{movie_id}")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
 
@@ -92,9 +89,48 @@ async def get_random_back_button(movie_id):
 async def get_random_btn(movie_id):
 
     keyboards = [
-        [InlineKeyboardButton(text="Подробнее", callback_data=f"random_movie_about_{movie_id}"), InlineKeyboardButton(text="в избранном", callback_data=f"movie_favourite_{movie_id}")],
-        [InlineKeyboardButton(text="Скрыт", callback_data="hide")]
+        [InlineKeyboardButton(text="📖 Подробнее", callback_data=f"random_movie_about_{movie_id}"), InlineKeyboardButton(text="⭐ В избранное", callback_data=f"movie_favourite_{movie_id}")],
+        [InlineKeyboardButton(text="✖️ Закрыть карточку", callback_data="hide")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
 
+    return keyboard
+
+
+
+async def get_genres_btn():
+    data = await get_all_genres() or []
+    keyboards = []
+    row = []
+
+    for genres in data:
+        callback_data = f"genre_show_{genres['genre']}"
+
+        
+
+        row.append(InlineKeyboardButton(text=f"{genres['genre']} ({genres['count']})", callback_data=callback_data))
+
+        if len(row) == 2:
+            keyboards.append(row)
+            row = []
+
+    if row:
+        keyboards.append(row)
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
+    return keyboard
+
+
+
+
+async def get_movies_by_genre_btn(genre):
+    data = await get_movies_by_genre(genre) or []
+    keyboards = []
+
+    for movies in data:
+        keyboards.append([InlineKeyboardButton(text=f"{movies['title']} ({movies['release_year']})", callback_data=f"movie_show_{movies['id']}")])
+
+    keyboards.append([InlineKeyboardButton(text="⬅️ Все жанры", callback_data="genre_back")])
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
     return keyboard

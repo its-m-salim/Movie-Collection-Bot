@@ -186,9 +186,10 @@ async def get_favourite_movies(tg_id):
         conn = await connection_db()
         movies = await conn.fetch("""
         
-    select favourites.*, movies.title, movies.genre, movies.release_year, movies.caption, movies.poster_file_id from favourites
+    select favourites.*, movies.title, movies.genre, movies.release_year, movies.caption, movies.poster_file_id, users.full_name from favourites
     join movies on movies.id =  favourites.movie_id
-    where user_id = $1
+    left join users on users.tg_id = movies.owner_id
+    where favourites.user_id = $1
 """, int(tg_id))
 
         return movies
@@ -229,6 +230,7 @@ async def random_movie():
     try:
         conn = await connection_db()
         movie = await conn.fetchrow("""
+
             select movies.*, users.full_name FROM movies
             join users on users.tg_id = movies.owner_id
             ORDER BY RANDOM()
@@ -240,3 +242,47 @@ async def random_movie():
         return False 
     finally:
         await conn.close()   
+
+
+
+
+
+async def get_all_genres():
+    try:
+        conn = await connection_db()
+        genres = await conn.fetch("""
+
+        select genre, count(*) as count from movies
+        where genre is not null
+        group by genre
+        order by genre
+""")
+
+        return genres
+    
+    except Exception as error:
+        print(f"{type(error)}: {error} sgag.py")
+        return False
+    finally:
+        await conn.close()
+
+
+
+async def get_movies_by_genre(genre):
+
+    try:
+        conn = await connection_db()
+        movies = await conn.fetch("""
+        select movies.*, users.full_name from movies
+        left join users on users.tg_id = movies.owner_id
+        where movies.genre = $1
+        order by movies.created_at desc
+""", genre)
+
+        return movies
+    
+    except Exception as error:
+        print(f"{type(error)}: {error} sgmbg.py")
+        return False
+    finally:
+        await conn.close()
