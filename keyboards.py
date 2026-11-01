@@ -8,7 +8,7 @@ from service import *
 main_kb = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🍽 Каталог"), KeyboardButton(text="избранные")],
-        [KeyboardButton(text="найти книгу"), KeyboardButton(text="Добавить книгу")],
+        [KeyboardButton(text="cлучайный фильм"), KeyboardButton(text="Добавить фильм")],
         [KeyboardButton(text="stats"), KeyboardButton(text="Помощь")]
         
     ],
@@ -47,6 +47,53 @@ async def get_info_about_movie(movie_id):
 async def get_back_button(movie_id):
     keyboards = [
         [InlineKeyboardButton(text="back", callback_data=f"movie_back_{movie_id}")]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
+
+    return keyboard
+
+
+
+
+async def delete_from_fv_button(movie_id):
+    keyboards = [
+        [InlineKeyboardButton(text="удалить из избранного", callback_data=f"movie_delete_{movie_id}"), InlineKeyboardButton(text="Подробнее", callback_data=f"fv_movie_about_{movie_id}")]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
+
+    return keyboard
+
+
+
+
+async def get_fv_back_button(movie_id):
+    keyboards = [
+        [InlineKeyboardButton(text="back", callback_data=f"fv_movie_back_{movie_id}")]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
+
+    return keyboard
+
+
+
+async def get_random_back_button(movie_id):
+    keyboards = [
+        [InlineKeyboardButton(text="back", callback_data=f"random_movie_back_{movie_id}")]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
+
+    return keyboard
+
+
+
+
+
+
+async def get_random_btn(movie_id):
+
+    keyboards = [
+        [InlineKeyboardButton(text="Подробнее", callback_data=f"random_movie_about_{movie_id}"), InlineKeyboardButton(text="в избранном", callback_data=f"movie_favourite_{movie_id}")],
+        [InlineKeyboardButton(text="Скрыт", callback_data="hide")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
 

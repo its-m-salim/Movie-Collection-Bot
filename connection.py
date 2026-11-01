@@ -50,10 +50,11 @@ async def create_tables():
 
         create table if not exists favourites(
             id serial primary key,
-            user_id bigint references users(tg_id) unique,
-            movie_id int references movies(id) unique,
+            user_id bigint references users(tg_id),
+            movie_id int references movies(id),
             added_at timestamp default now(),
-            is_active bool default true
+            is_active bool default true,
+            unique(user_id, movie_id)
         )
 """)
         print("Tables created successfuly")

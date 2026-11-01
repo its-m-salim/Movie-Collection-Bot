@@ -26,21 +26,53 @@ dp = Dispatcher()
 
 
 
-@dp.message(F.text == "🍽 Каталог")
-@dp.message(Command("movies"))
+@dp.message(F.text == "избранные")
+@dp.message(Command("favourites"))
 async def show_all_movies(message: Message):
 
-    movies = await all_movies()
+    movies = await get_favourite_movies(message.from_user.id)
 
     if not movies:
-        await message.answer("not movies yet")
+        await message.answer("Раздел избранных пока пусто ")
         return
 
-    await message.answer(f"your movies: {len(movies)}")
+    for movie in movies:
+        buttons = await delete_from_fv_button(movie['movie_id'])
+        caption = f"""
+<b>{movie['title']}</b>
+
+year: {movie['release_year']}
+
+genre: {movie['genre']}
+        """
+        await message.answer_photo(photo=movie['poster_file_id'], caption=caption, reply_markup=buttons, parse_mode="HTML")
 
 
-@dp.message(F.text == "найти книгу")
-@dp.message(Command("movie"))
+@dp.message(F.text == "cлучайный фильм")
+@dp.message(Command("random"))
+async def show_random_movie(message: Message):
+    movie = await random_movie()
+
+    if not movie:
+        await message.answer("Каталог пока пуст!")
+        return
+
+    caption = f"""
+🎬 <b>{movie['title']}</b>
+📅 Год: {movie['release_year']}
+🎭 Жанр: {movie['genre']}
+"""
+    
+
+    await message.answer_photo(photo=movie['poster_file_id'], caption=caption, parse_mode="HTML", reply_markup= await get_random_btn(movie['id']))
+
+
+
+
+
+
+@dp.message(F.text == "🍽 Каталог")
+@dp.message(Command("movies"))
 async def show_one_movie(message: Message):
 
     buttons = await get_movies_all_btn()
@@ -50,6 +82,20 @@ async def show_one_movie(message: Message):
         return
 
     await message.answer("select a movie to see about", reply_markup=buttons)
+
+
+
+@dp.message(F.text == "stats")
+@dp.message(Command("stats"))
+async def show_favourites_count(message: Message):
+
+    total = await get_favourites_count(message.from_user.id)
+    if total['count'] < 1:
+        await message.answer("Похоже у вас нет избранных фильмов , исследуйте фильмы в общем каталоге")
+        return
+
+    await message.answer(f"У вас всего {total['count']} фильмов в избранном")
+
 
 
 

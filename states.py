@@ -20,7 +20,20 @@ class add_new_movie(StatesGroup):
 
 
 
-@router.message(F.text == "Добавить книгу")
+
+
+@router.message(Command("cancel"))
+@router.message(F.text == "❌ Отмена")
+async def cancel_by_message(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer("↩️ Действие отменено.")
+
+
+
+
+
+
+@router.message(F.text == "Добавить фильм")
 @router.message(Command("add"))
 async def add_movie_command(message: Message, state: FSMContext):
     await message.answer("enter name of movie")

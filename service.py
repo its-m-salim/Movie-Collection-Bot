@@ -78,7 +78,7 @@ async def one_movie(m_id):
     try:
         conn = await connection_db()
         movie = await conn.fetchrow("""
-        select *, users.full_name from movies
+        select movies.*, users.full_name from movies
         left join users on users.tg_id = movies.owner_id
         where movies.id = $1
 """, int(m_id))
@@ -97,7 +97,7 @@ async def all_movies():
     try:
         conn = await connection_db()
         movie = await conn.fetch("""
-        select *, users.full_name from movies
+        select movies.*, users.full_name from movies
         join users on users.tg_id = movies.owner_id
 """)
 
@@ -160,5 +160,83 @@ async def check_favourites(movie_id, user_id):
     except Exception as error:
         print(f"{type(error)}: {error} stf.py") 
         return False    
+    finally:
+        await conn.close()   
+
+
+async def get_favourites_count(tg_id):
+    try:
+        conn = await connection_db()
+        count = await conn.fetchrow("""
+        select count(*) as count from favourites 
+        where user_id = $1
+""",int(tg_id) )
+
+        return count
+    except Exception as error:
+        print(f"{type(error)}: {error} sgfc.py")     
+        return False
+    finally:
+        await conn.close()   
+
+
+
+async def get_favourite_movies(tg_id):
+    try:
+        conn = await connection_db()
+        movies = await conn.fetch("""
+        
+    select favourites.*, movies.title, movies.genre, movies.release_year, movies.caption, movies.poster_file_id from favourites
+    join movies on movies.id =  favourites.movie_id
+    where user_id = $1
+""", int(tg_id))
+
+        return movies
+    except Exception as error:
+        print(f"{type(error)}: {error} sgfm.py")    
+        return False 
+    finally:
+        await conn.close()   
+
+
+
+
+
+async def delete_from_favourites(m_id, tg_id):
+
+    try:
+        conn = await connection_db()
+        result = await conn.fetchrow("""
+        delete from favourites
+        where movie_id = $1 and user_id = $2
+        returning id
+""", int(m_id), int(tg_id))
+
+        if not result:
+            return False
+
+        return True
+
+    except Exception as error:
+        print(f"{type(error)}: {error} sdf.py")  
+        return False   
+    finally:
+        await conn.close()   
+
+
+
+async def random_movie():
+    try:
+        conn = await connection_db()
+        movie = await conn.fetchrow("""
+            select movies.*, users.full_name FROM movies
+            join users on users.tg_id = movies.owner_id
+            ORDER BY RANDOM()
+            LIMIT 1
+        """)
+        return movie
+    except Exception as error:
+        print(f"{type(error)}: {error} rm.py")    
+        return False 
     finally:
         await conn.close()   
