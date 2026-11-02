@@ -19,6 +19,10 @@ class add_new_movie(StatesGroup):
     get_movie_photo = State()
 
 
+class search_movie(StatesGroup):
+    get_query = State()
+
+
 
 
 
@@ -34,6 +38,35 @@ async def cancel_by_message(message: Message, state: FSMContext):
     await state.clear()
     await message.answer("↩️ Добавление фильма отменено. Вы можете выбрать другое действие в меню.")
 
+
+
+
+@router.message(F.text == "🔍 Поиск")
+async def start_search(message: Message, state: FSMContext):
+
+    await state.set_state(search_movie.get_query)
+    await message.answer("🔍 Введите название фильма или его часть.\n\nНапример: интер\n\nОтмена: /cancel")
+
+
+
+
+@router.message(search_movie.get_query)
+async def get_search_query(message: Message, state: FSMContext):
+
+    if not message.text or message.text.startswith("/"):
+        await message.answer("⚠️ Отправьте название текстом, например: интер\n\nОтмена: /cancel")
+        return
+
+    query = message.text.strip()
+
+    buttons = await get_search_btn(query)
+
+    if not buttons.inline_keyboard:
+        await message.answer(f"😔 По запросу «{query}» ничего не найдено.\n\nПопробуйте другое слово или отправьте /cancel.")
+        return
+
+    await state.clear()
+    await message.answer(f"🔍 Найдено по запросу «{query}»: {len(buttons.inline_keyboard)}\n\nВыберите фильм, чтобы открыть карточку:", reply_markup=buttons)
 
 
 

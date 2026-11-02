@@ -8,7 +8,8 @@ main_kb = ReplyKeyboardMarkup(
         [KeyboardButton(text="🍿 Каталог фильмов"), KeyboardButton(text="⭐ Избранное")],
         [KeyboardButton(text="🎭 Жанры"), KeyboardButton(text="🎲 Случайный фильм")],
         [KeyboardButton(text="➕ Добавить фильм"), KeyboardButton(text="📊 Статистика")],
-        [KeyboardButton(text="ℹ️ Помощь"), KeyboardButton(text="❌ Отмена")]
+        [KeyboardButton(text="ℹ️ Помощь"), KeyboardButton(text="❌ Отмена")],
+        [KeyboardButton(text="🔍 Поиск")]
     ],
     resize_keyboard=True,
 )
@@ -21,7 +22,7 @@ async def get_movies_all_btn():
     keyboards = []
 
     for movies in data:
-        keyboards.append([InlineKeyboardButton(text=f"{movies['title']}({movies['release_year']})", callback_data=f"movie_show_{movies['id']}")])
+        keyboards.append([InlineKeyboardButton(text=f"{movies['title']} ({movies['release_year']})", callback_data=f"movie_show_{movies['id']}")])
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
     return keyboard
@@ -131,6 +132,17 @@ async def get_movies_by_genre_btn(genre):
         keyboards.append([InlineKeyboardButton(text=f"{movies['title']} ({movies['release_year']})", callback_data=f"movie_show_{movies['id']}")])
 
     keyboards.append([InlineKeyboardButton(text="⬅️ Все жанры", callback_data="genre_back")])
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
+    return keyboard
+
+
+async def get_search_btn(query):
+    data = await search_movies(query) 
+    keyboards = []
+
+    for movies in data:
+        keyboards.append([InlineKeyboardButton(text=f"{movies['title']} ({movies['release_year']})", callback_data=f"movie_show_{movies['id']}")])
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboards)
     return keyboard

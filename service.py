@@ -291,3 +291,22 @@ async def get_movies_by_genre(genre):
         return False
     finally:
         await conn.close()
+
+
+async def search_movies(query):
+    
+    try:
+        conn = await connection_db()
+        movies = await conn.fetch("""
+        select id, title, release_year from movies
+        where title ilike '%' || $1 || '%'
+        order by title
+        limit 20
+""", query)
+
+        return movies
+    except Exception as error:
+        print(f"{type(error)}: {error} sm.py")
+        return False
+    finally:
+        await conn.close()

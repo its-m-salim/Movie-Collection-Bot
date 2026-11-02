@@ -8,9 +8,11 @@ from keyboards import *
 from states import router as state_router
 from service import *
 from connection import *
-from texts import movie_caption
+from texts import *
 from callbacks import router as callback_router
 from fallback import router as fallback_router
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
 load_dotenv()
 
 
@@ -104,17 +106,29 @@ async def show_genres(message: Message):
 
 
 
+
+
 @dp.message(Command("start"))
-async def start_bot(message: Message):
+async def start_bot(message: Message, state: FSMContext):
+
+    await state.clear()
 
     user = message.from_user
 
     if not await profile(user.id):
         await create_user(user.username, user.full_name, user.id)
-        await message.answer(f"👋 Добро пожаловать, {message.from_user.full_name}!\n\n🍿 Здесь вы можете просматривать общий каталог, находить случайные фильмы и собирать собственную коллекцию избранного.\n\nВыберите действие в меню:", reply_markup=main_kb)
+        await message.answer(start_text(user.full_name), reply_markup=main_kb, parse_mode="HTML")
     else:
-        await message.answer(f"👋 С возвращением, {user.full_name}!\n\nПродолжим знакомиться с фильмами? Выберите действие в меню:", reply_markup=main_kb)
+        await message.answer(welcome_back_text(user.full_name), reply_markup=main_kb, parse_mode="HTML")
 
+
+
+
+@dp.message(Command("help"))
+@dp.message(F.text == "ℹ️ Помощь")
+async def help_command(message: Message):
+
+    await message.answer(help_text, parse_mode="HTML")
 
 
 
