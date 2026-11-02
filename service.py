@@ -78,7 +78,8 @@ async def one_movie(m_id):
     try:
         conn = await connection_db()
         movie = await conn.fetchrow("""
-        select movies.*, users.full_name from movies
+        select movies.*, users.full_name,
+        (select count(*) from favourites where favourites.movie_id = movies.id) as fav_count from movies
         left join users on users.tg_id = movies.owner_id
         where movies.id = $1
 """, int(m_id))
@@ -186,10 +187,12 @@ async def get_favourite_movies(tg_id):
         conn = await connection_db()
         movies = await conn.fetch("""
         
-    select favourites.*, movies.title, movies.genre, movies.release_year, movies.caption, movies.poster_file_id, users.full_name from favourites
-    join movies on movies.id =  favourites.movie_id
+    select favourites.*, movies.title, movies.genre, movies.release_year, movies.caption, users.full_name, movies.poster_file_id,
+    (select count(*) from favourites f where f.movie_id = movies.id) as fav_count
+    from favourites
+    join movies on movies.id = favourites.movie_id
     left join users on users.tg_id = movies.owner_id
-    where favourites.user_id = $1
+    where user_id = $1
 """, int(tg_id))
 
         return movies
@@ -231,7 +234,9 @@ async def random_movie():
         conn = await connection_db()
         movie = await conn.fetchrow("""
 
-            select movies.*, users.full_name FROM movies
+            select movies.*, 
+            (select count(*) from favourites where favourites.movie_id = movies.id) as fav_count,
+            users.full_name FROM movies
             join users on users.tg_id = movies.owner_id
             ORDER BY RANDOM()
             LIMIT 1

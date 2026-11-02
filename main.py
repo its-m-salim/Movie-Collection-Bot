@@ -3,14 +3,14 @@ import asyncio
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message
-from aiogram.filters import Command
+from aiogram.filters import Command ,StateFilter
 from keyboards import *
 from states import router as state_router
 from service import *
 from connection import *
 from texts import movie_caption
 from callbacks import router as callback_router
-
+from fallback import router as fallback_router
 load_dotenv()
 
 
@@ -123,11 +123,11 @@ async def main():
     await create_tables()
     dp.include_router(state_router)
     dp.include_router(callback_router)
+    dp.include_router(fallback_router)
     await dp.start_polling(bot)
 
-@dp.message()
-async def nothing(message: Message):
-    await message.answer("Не понял. Откройте меню или /help.", reply_markup= main_kb)
+
+
 
 if __name__ == "__main__":
     asyncio.run(main())

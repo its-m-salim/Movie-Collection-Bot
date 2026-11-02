@@ -8,7 +8,7 @@ main_kb = ReplyKeyboardMarkup(
         [KeyboardButton(text="🍿 Каталог фильмов"), KeyboardButton(text="⭐ Избранное")],
         [KeyboardButton(text="🎭 Жанры"), KeyboardButton(text="🎲 Случайный фильм")],
         [KeyboardButton(text="➕ Добавить фильм"), KeyboardButton(text="📊 Статистика")],
-        [KeyboardButton(text="ℹ️ Помощь")]
+        [KeyboardButton(text="ℹ️ Помощь"), KeyboardButton(text="❌ Отмена")]
     ],
     resize_keyboard=True,
 )
@@ -99,7 +99,7 @@ async def get_random_btn(movie_id):
 
 
 async def get_genres_btn():
-    data = await get_all_genres() or []
+    data = await get_all_genres() 
     keyboards = []
     row = []
 
@@ -124,7 +124,7 @@ async def get_genres_btn():
 
 
 async def get_movies_by_genre_btn(genre):
-    data = await get_movies_by_genre(genre) or []
+    data = await get_movies_by_genre(genre) 
     keyboards = []
 
     for movies in data:

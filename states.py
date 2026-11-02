@@ -25,6 +25,12 @@ class add_new_movie(StatesGroup):
 @router.message(Command("cancel"))
 @router.message(F.text == "❌ Отмена")
 async def cancel_by_message(message: Message, state: FSMContext):
+
+    if await state.get_state() is None:
+        await message.answer("Сейчас нет активного ввода, отменять нечего.")
+        return
+
+
     await state.clear()
     await message.answer("↩️ Добавление фильма отменено. Вы можете выбрать другое действие в меню.")
 
@@ -92,10 +98,10 @@ async def add_new_movie_get_year(message: Message, state: FSMContext):
 
     year = message.text
 
-    if not message.text():
+    if not message.text:
         await message.answer("⚠️ Год должен быть числом. Попробуйте ещё раз:")
     
-    if not year.isdigit() or not isinstance(year, int):
+    if not year.isdigit():
         await message.answer("⚠️ Год должен быть числом. Попробуйте ещё раз:")
         return
     

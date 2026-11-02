@@ -11,7 +11,8 @@ def movie_caption(movie, show_description=False):
         "",
         f"📅 <b>Год выхода:</b> {movie['release_year']}",
         f"🎭 <b>Жанр:</b> {genre}",
-        f"👤 <b>Добавил:</b> {owner}"
+        f"👤 <b>Добавил:</b> {owner}",
+        f"❤️ В избранном: {movie['fav_count']}"
     ]
 
     if show_description:
