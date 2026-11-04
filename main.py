@@ -11,6 +11,7 @@ from connection import *
 from texts import *
 from callbacks import router as callback_router
 from fallback import router as fallback_router
+from my_movies import router as my_movies_router
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 load_dotenv()
@@ -123,6 +124,21 @@ async def start_bot(message: Message, state: FSMContext):
 
 
 
+@dp.message(F.text == "🎬 Мои фильмы")
+@dp.message(Command("my_movies"))
+async def show_my_movies(message: Message, state: FSMContext):
+
+    await state.clear()
+
+    buttons = await get_my_movies_btn(message.from_user.id)
+
+    if not buttons.inline_keyboard:
+        await message.answer("🎬 Вы пока не добавили ни одного фильма.\n\nНажмите «➕ Добавить фильм», чтобы создать первый!")
+        return
+
+    await message.answer(f"🎬 Ваши фильмы: {len(buttons.inline_keyboard)}\n\nВыберите фильм, чтобы открыть его и изменить:", reply_markup=buttons)
+
+
 
 @dp.message(Command("help"))
 @dp.message(F.text == "ℹ️ Помощь")
@@ -138,6 +154,7 @@ async def main():
     dp.include_router(state_router)
     dp.include_router(callback_router)
     dp.include_router(fallback_router)
+    dp.include_router(my_movies_router)
     await dp.start_polling(bot)
 
 

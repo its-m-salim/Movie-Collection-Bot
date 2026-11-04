@@ -36,14 +36,14 @@ async def add_movie_to_favourites(callback: CallbackQuery):
     movie_id = callback.data.split("_")[2]
 
     if await check_favourites(movie_id, callback.from_user.id):
-        await callback.message.answer("⭐ Этот фильм уже есть в вашем избранном.")
+        await callback.answer("⭐ Этот фильм уже есть в вашем избранном.")
         await callback.answer()
         return 
 
     if await to_favourites(movie_id, callback.from_user.id):
-        await callback.message.answer("⭐ Фильм добавлен в избранное!")
+        await callback.answer("⭐ Фильм добавлен в избранное!")
     else:
-        await callback.message.answer("❌ Не удалось добавить фильм. Попробуйте позже.")
+        await callback.answer("❌ Не удалось добавить фильм. Попробуйте позже.")
     await callback.answer()
 
 
@@ -139,9 +139,9 @@ async def back_to_movie(callback: CallbackQuery):
 
     if await delete_from_favourites(movie_id, callback.from_user.id):
         await callback.message.delete()
-        await callback.message.answer("🗑 Фильм удалён из вашего избранного.")
+        await callback.answer("🗑 Фильм удалён из вашего избранного.")
     else:
-        await callback.message.answer("❌ Не удалось удалить фильм из избранного. Попробуйте ещё раз.")
+        await callback.answer("❌ Не удалось удалить фильм из избранного. Попробуйте ещё раз.")
 
 
     if not await get_favourite_movies(callback.from_user.id):
@@ -265,3 +265,19 @@ async def back_to_genres(callback: CallbackQuery):
 
     await callback.message.edit_text("🎭 Выберите жанр:", reply_markup=buttons)
     await callback.answer()
+
+
+
+@router.callback_query(F.data == "random")
+async def more_random(callback: CallbackQuery):
+    movie = await random_movie()
+    
+    if not movie:
+        await callback.message.answer("🎬 Каталог пока пуст.\n\nДобавьте первый фильм, чтобы здесь появились рекомендации!")
+        await callback.answer()
+        return
+
+    caption = movie_caption(movie)
+    
+    await callback.answer()
+    await callback.message.answer_photo(photo=movie['poster_file_id'], caption=caption, parse_mode="HTML", reply_markup= await get_random_btn(movie['id']))

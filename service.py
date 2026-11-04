@@ -310,3 +310,76 @@ async def search_movies(query):
         return False
     finally:
         await conn.close()
+
+
+
+async def get_my_movies(owner_id):
+    try:
+        conn = await connection_db()
+        movies = await conn.fetch("""
+        select id, title, release_year from movies
+        where owner_id = $1
+        order by created_at desc
+        limit 50
+""", int(owner_id))
+
+        return movies
+    except Exception as error:
+        print(f"{type(error)}: {error} sgmm.py")
+        return False
+    finally:
+        await conn.close()
+
+
+
+async def update_my_movie(movie_id, owner_id, field, value):
+    try:
+        conn = await connection_db()
+
+        columns = {
+            "title": "title",
+            "genre": "genre",
+            "year": "release_year",
+            "caption": "caption",
+            "photo": "poster_file_id"
+        }
+
+        if field not in columns:
+            return False
+
+        result = await conn.execute(f"""
+        update movies set {columns[field]} = $1
+        where id = $2 and owner_id = $3
+""", value, int(movie_id), int(owner_id))
+
+        return result == "UPDATE 1"
+    except Exception as error:
+        print(f"{type(error)}: {error} summ.py")
+        return False
+    finally:
+        await conn.close()
+
+
+
+async def delete_my_movie(movie_id, owner_id):
+    try:
+        conn = await connection_db()
+
+        async with conn.transaction():
+            movie = await conn.fetchrow("""
+            select id from movies
+            where id = $1 and owner_id = $2
+""", int(movie_id), int(owner_id))
+
+            if not movie:
+                return False
+
+            await conn.execute("delete from favourites where movie_id = $1", int(movie_id))
+            await conn.execute("delete from movies where id = $1", int(movie_id))
+
+        return True
+    except Exception as error:
+        print(f"{type(error)}: {error} sdmm.py")
+        return False
+    finally:
+        await conn.close()

@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 from service import *
 from keyboards import *
 from datetime import date, datetime
+from my_movies import *
 router = Router()
 
 
@@ -30,13 +31,21 @@ class search_movie(StatesGroup):
 @router.message(F.text == "❌ Отмена")
 async def cancel_by_message(message: Message, state: FSMContext):
 
-    if await state.get_state() is None:
+    current_state = await state.get_state()
+
+    if current_state is None:
         await message.answer("Сейчас нет активного ввода, отменять нечего.")
         return
 
 
+    if current_state in add_new_movie.__all_states__:
+        await message.answer("↩️ Добавление фильма отменено. Вы можете выбрать другое действие в меню.")
+    elif current_state in search_movie.__all_states__:
+        await message.answer("↩️ Поиск фильма отменено. Вы можете выбрать другое действие в меню.")
+    elif current_state in edit_my_movie.__all_states__:
+        await message.answer("↩️Изменения фильма отменено. Вы можете выбрать другое в меню.")
+
     await state.clear()
-    await message.answer("↩️ Добавление фильма отменено. Вы можете выбрать другое действие в меню.")
 
 
 
